@@ -1,0 +1,27 @@
+table {
+    border-collapse: collapse;
+    text-align: left;
+}
+
+td {
+    padding: 2px 6px 2px 6px;
+    vertical-align: middle;
+    align-items: start;
+    text-align: left;
+}
+
+.statusCircle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 4px;
+}
+
+.statusCircle.online {
+    background-color: green;
+}
+
+.statusCircle.offline {
+    background-color: red;
+}
