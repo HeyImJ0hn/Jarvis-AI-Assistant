@@ -1,7 +1,8 @@
 Module.register("MMM-JarvisServer", {
 	defaults: {
 		text: "Pinging Devices...",
-		pingResults: {}
+		pingResults: {},
+		serverStatus: false
 	},
 
 	loaded: function (callback) {
@@ -19,6 +20,9 @@ Module.register("MMM-JarvisServer", {
 		if (notification == "PING_RESULTS") {
 			this.config.pingResults = payload;
 			this.updateDom();
+		} else if (notification == "SERVER_STATUS") {
+			this.config.serverStatus = payload.status
+			this.updateDom();
 		}
 	},
 
@@ -35,32 +39,26 @@ Module.register("MMM-JarvisServer", {
 		wrapper.id = "pingStatus";
 	
 		let results = this.config.pingResults;
-	
 		wrapper.innerHTML = ""; 
 	
 		let table = document.createElement("table");
-		
-		if (Object.keys(results).length === 0) {
-			let noDataRow = table.insertRow();
-			let cell = noDataRow.insertCell(0);
-			cell.colSpan = 3;
-			cell.textContent = this.config.text;
-		} else {
-			for (let device in results) {
-				let row = table.insertRow();
-				
-				let deviceCell = row.insertCell(0);
-				deviceCell.textContent = device;
 	
-				let statusCell = row.insertCell(1);
-				let statusCircle = document.createElement("span");
-				statusCircle.classList.add("statusCircle");
-				statusCircle.classList.add(results[device] ? "online" : "offline");
-				statusCell.appendChild(statusCircle);
+		const createStatusRow = (device, status) => {
+			let row = table.insertRow();
+			row.insertCell(0).textContent = device;
 	
-				let statusTextCell = row.insertCell(2);
-				statusTextCell.textContent = results[device] ? "Online" : "Offline";
-			}
+			let statusCell = row.insertCell(1);
+			let statusCircle = document.createElement("span");
+			statusCircle.classList.add("statusCircle", status ? "online" : "offline");
+			statusCell.appendChild(statusCircle);
+	
+			row.insertCell(2).textContent = status ? "Online" : "Offline";
+		};
+	
+		createStatusRow("Server", this.config.serverStatus);
+	
+		for (let device in results) {
+			createStatusRow(device, results[device]);
 		}
 	
 		wrapper.appendChild(table);
