@@ -3,11 +3,7 @@ const server = require('./server');
 const NodeHelper = require("node_helper");
 const Log = require("logger");
 const ping = require("ping");
-const devices = {
-    "Desktop": "192.168.1.74",
-    "Laptop": "192.168.1.69",
-    "Phone": "192.168.1.80"
-}
+let devices = {}
 
 module.exports = NodeHelper.create({
 
@@ -16,6 +12,7 @@ module.exports = NodeHelper.create({
             Log.log(payload.message);
             this.checkServerStatus();
             server.startServer();
+            devices = server.devices;
             this.pingDevices();
         } else if (notification === "PRINT_MESSAGE") {
             Log.log("[JS] " + payload.message);
@@ -35,12 +32,10 @@ module.exports = NodeHelper.create({
         
         const pingAllDevices = () => {
             let pingCount = 0;
-            let results = {
-                "Desktop": false,
-                "Laptop": false,
-                "Phone": false
-            };
-    
+            let results = {};
+            for (let device in devices)
+                results[device] = false;
+
             for (let device in devices) {
                 let ip = devices[device];
                 ping.sys.probe(ip, (isAlive) => {

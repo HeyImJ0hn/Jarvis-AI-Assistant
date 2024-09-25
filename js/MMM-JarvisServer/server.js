@@ -1,28 +1,29 @@
 const WebSocket = require('ws');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = 8082;
 const IP = '192.168.1.88';
-
-const devices = {
-    "Desktop": "192.168.1.74",
-    "Laptop": "192.168.1.69",
-    "Phone": "192.168.1.80"
+let readFile = false;
+const dataPath = path.resolve(__dirname, 'data/devices.json');
+const clients = {};
+let devices = {};
+try {
+    devices = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+    readFile = true;
+} catch (error) {
+    console.error(error);
 }
 
-const clients = {
-    "Desktop": {
-        connected: false,
-        ws: null
-    },
-    "Laptop": {
-        connected: false,
-        ws: null
-    },
-    "Phone": {
-        connected: false,
-        ws: null
+if (readFile) {
+    for (const device in devices) {
+        clients[device] = {
+            connected: false,
+            ws: null
+        };
     }
 }
+
 
 const wss = new WebSocket.Server({ port: PORT, host: IP });
 
@@ -96,6 +97,7 @@ module.exports = {
     getStatus: () => {
         return true;
     },
+    devices,
     clients,
     sendMessageToClient
 };
