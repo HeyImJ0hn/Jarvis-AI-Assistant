@@ -15,8 +15,8 @@ module.exports = NodeHelper.create({
         if (notification === "JARVIS_READY") {
             Log.log(payload.message);
             this.checkServerStatus();
+            server.startServer();
             this.pingDevices();
-            server;
         } else if (notification === "PRINT_MESSAGE") {
             Log.log("[JS] " + payload.message);
         }
@@ -31,7 +31,10 @@ module.exports = NodeHelper.create({
     pingDevices: function() {
         Log.log("[JS] Starting to ping devices...");
     
+        let deviceAmount = Object.keys(devices).length;
+        
         const pingAllDevices = () => {
+            let pingCount = 0;
             let results = {
                 "Desktop": false,
                 "Laptop": false,
@@ -41,9 +44,12 @@ module.exports = NodeHelper.create({
             for (let device in devices) {
                 let ip = devices[device];
                 ping.sys.probe(ip, (isAlive) => {
-                    results[device] = isAlive;
-    
-                    this.sendSocketNotification("PING_RESULTS", results);
+                    results[device] = server.clients[device].connected ? "connected" : isAlive ? "online" : "offline";
+                    pingCount++;
+                    
+                    if (pingCount === deviceAmount) {
+                        this.sendSocketNotification("PING_RESULTS", results);
+                    }
                 });
             }
             Log.log("[JS] Pinging complete. Sending results.");
@@ -51,7 +57,7 @@ module.exports = NodeHelper.create({
     
         pingAllDevices();
     
-        setInterval(pingAllDevices, 100000);
+        setInterval(pingAllDevices, 60000 * 30); // Ping every 30 minutes
     }
 
 });

@@ -1,37 +1,101 @@
-const express = require('express');
-const https = require('https');
-const fs = require('fs');
+const WebSocket = require('ws');
 
 const PORT = 8082;
 const IP = '192.168.1.88';
 
-const app = express();
+const devices = {
+    "Desktop": "192.168.1.74",
+    "Laptop": "192.168.1.69",
+    "Phone": "192.168.1.80"
+}
 
-const sslOptions = {
-    key: fs.readFileSync(process.cwd() + '/modules/MMM-JarvisServer/server.key'),
-    cert: fs.readFileSync(process.cwd() + '/modules/MMM-JarvisServer/server.cert')
+const clients = {
+    "Desktop": {
+        connected: false,
+        ws: null
+    },
+    "Laptop": {
+        connected: false,
+        ws: null
+    },
+    "Phone": {
+        connected: false,
+        ws: null
+    }
+}
+
+const wss = new WebSocket.Server({ port: PORT, host: IP });
+
+wss.on('connection', (ws, req) => {
+    ws.send('Connected to J.A.R.V.I.S. Server');
+
+    let ip = req.socket.remoteAddress;
+    const device = Object.entries(devices).find(([device, value]) => value === ip)?.[0];
+
+    clients[device].connected = true;
+    clients[device].ws = ws;
+
+    console.log(`Client connected: ${device} (${ip})`);
+
+    ws.on('message', (message) => {
+        console.log(`Received message: ${message}`);
+
+        try {
+            const data = JSON.parse(message);
+            const targetDevice = data.target;
+            const msgToSend = data.message;
+
+            let targetClient = clients[targetDevice];
+            if (!targetClient.connected) {
+                ws.send(`Target device ${targetDevice} is not connected`);
+            } else {
+                console.log(`Sending message to ${targetDevice}: ${msgToSend}`);
+                targetClient.ws.send(JSON.stringify({ from: device, message: msgToSend }), (error) => {
+                    if (error) {
+                        console.error(error);
+                    } else {
+                        ws.send(`Message sent to ${targetDevice}`);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
+
+    ws.on('close', () => {
+        console.log(`Client disconnected: ${device} (${ip})`);
+        clients[device].connected = false;
+        clients[device].ws = null;
+    });
+});
+
+const sendMessageToClient = (targetDevice, message) => {
+    let targetClient = clients[targetDevice];
+    if (!targetClient || !targetClient.connected) {
+        console.error(`Cannot send message. Target device ${targetDevice} is not connected.`);
+        return false;
+    }
+
+    targetClient.ws.send(JSON.stringify({ from: "Server", message: message }), (error) => {
+        if (error) {
+            console.error(`Error sending message to ${targetDevice}:`, error);
+            return false;
+        }
+    });
+    
+    console.log(`Message sent to ${targetDevice}: ${message}`);
+    return true;
 };
 
-app.use(express.json());
-
-app.post('/req', (req, res) => {
-    console.log('Received request:', req.body);
-    res.json({ message: 'Request received!', data: req.body });
-});
-
-app.get('/status', (req, res) => {
-    res.json({ status: serverStatus });
-});
-
-const server = https.createServer(sslOptions, app);
-server.listen(PORT, IP, () => {
-    console.log(`Server running on https://${IP}:${PORT}`);
-    serverStatus = true;
-}).on('error', (err) => {
-    console.error(err);
-});
 
 module.exports = {
-    server,
-    getStatus: () => serverStatus
-}
+    startServer: () => {
+        console.log(`WebSocket server is running on ws://${IP}:${PORT}`);
+    },
+    getStatus: () => {
+        return true;
+    },
+    clients,
+    sendMessageToClient
+};

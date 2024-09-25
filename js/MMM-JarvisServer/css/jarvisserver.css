@@ -19,9 +19,13 @@ td {
 }
 
 .statusCircle.online {
-    background-color: green;
+    background-color: dodgerblue;
 }
 
 .statusCircle.offline {
     background-color: red;
+}
+
+.statusCircle.connected {
+    background-color: green;
 }

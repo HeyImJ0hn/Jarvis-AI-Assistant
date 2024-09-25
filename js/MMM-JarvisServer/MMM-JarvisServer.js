@@ -49,13 +49,13 @@ Module.register("MMM-JarvisServer", {
 	
 			let statusCell = row.insertCell(1);
 			let statusCircle = document.createElement("span");
-			statusCircle.classList.add("statusCircle", status ? "online" : "offline");
+			statusCircle.classList.add("statusCircle", status);
 			statusCell.appendChild(statusCircle);
 	
-			row.insertCell(2).textContent = status ? "Online" : "Offline";
+			row.insertCell(2).textContent = status === "connected" ? "Connected" : status === "online" ? "Online" : "Offline";
 		};
 	
-		createStatusRow("Server", this.config.serverStatus);
+		createStatusRow("Server", this.config.serverStatus ? "connected" : "offline");
 	
 		for (let device in results) {
 			createStatusRow(device, results[device]);
