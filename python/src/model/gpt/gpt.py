@@ -82,7 +82,7 @@ class GPTProcessing:
             else:
                 print("JARVIS: Commit canceled.")
         else:
-            messages = [{"role": "system", "content": "You are JARVIS, an AI assistant."},
+            messages = [{"role": "system", "content": "You are JARVIS, an AI assistant that helps the user with various tasks. You are rational, logic and slightly funny."},
                         {"role": "user", "content": command}]
             response = self.send_messages(messages)
             print("JARVIS:", response)
