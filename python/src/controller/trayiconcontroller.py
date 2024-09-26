@@ -1,11 +1,14 @@
-from view.views import CommandWindow
 from controller.viewcontrollers import CommandWindowController
+from view.trayicon import TrayIcon
 
 class TrayIconController:
     def __init__(self):
+        self.view = TrayIcon(self)
         self.command_window = None
 
     def send_command(self):
-        command_window_controller = CommandWindowController()
-        self.command_window = CommandWindow(command_window_controller)
+        self.command_window = CommandWindowController()
         self.command_window.run()
+
+    def run(self):
+        self.view.run()

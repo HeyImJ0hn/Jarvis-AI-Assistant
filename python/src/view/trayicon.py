@@ -2,17 +2,16 @@ import pystray
 from PIL import Image
 import sys
 
-from controller.trayiconcontroller import TrayIconController
-
 class TrayIcon:
-    def __init__(self):
-        self.controller = TrayIconController()
+    def __init__(self, controller):
+        self.controller = controller
 
         self.image = Image.open("python/static/reactor.png")
         self.menu = pystray.Menu(
             pystray.MenuItem("J.A.R.V.I.S.", None, visible=True, enabled=False),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Send Command", self.send_command, visible=True, enabled=True),
+            pystray.MenuItem("Command", self.send_command, visible=True, enabled=True),
+            pystray.MenuItem("Connections", self.send_command, visible=True, enabled=True),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Quit", self.quit, visible=True, enabled=True)
         )

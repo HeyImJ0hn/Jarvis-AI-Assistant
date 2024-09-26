@@ -1,9 +1,7 @@
 import asyncio
 from model.network.client import Client
 
-from controller.viewcontrollers import CommandWindowController
-from view.views import CommandWindow
-from view.trayicon import TrayIcon
+from controller.trayiconcontroller import TrayIconController
 
 from PySide6.QtWidgets import QApplication
 
@@ -12,7 +10,7 @@ if __name__ == '__main__':
     #asyncio.run(client.run())
     
     app = QApplication([])
-    tray_icon = TrayIcon()
+    tray_icon = TrayIconController()
     
     tray_icon.run()
     app.exec()
