@@ -11,7 +11,7 @@ class TrayIcon:
             pystray.MenuItem("J.A.R.V.I.S.", None, visible=True, enabled=False),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Command", self.send_command, visible=True, enabled=True),
-            pystray.MenuItem("Connections", self.send_command, visible=True, enabled=True),
+            pystray.MenuItem("Connections", self.connections, visible=True, enabled=True),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Quit", self.quit, visible=True, enabled=True)
         )
@@ -20,7 +20,11 @@ class TrayIcon:
     def send_command(self):
         self.controller.send_command()
 
+    def connections(self):
+        self.controller.connections()
+
     def run(self):
+        print("Running tray icon")
         self.icon.run_detached()
 
     def quit(self):

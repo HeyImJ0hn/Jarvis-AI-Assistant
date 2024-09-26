@@ -4,11 +4,13 @@ import json
 import sys
 
 class Client:
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, repository):
         self.ip = ip
         self.port = port
         self.url = f'ws://{self.ip}:{self.port}'
         self.websocket = None
+
+        self.repository = repository
 
     # Establish a connection to the server
     async def connect(self):
@@ -46,7 +48,8 @@ class Client:
         try:
             while True:
                 message = await self.websocket.recv()
-                print(f"Received: {message}")
+                json_data = json.loads(message)
+                await self.process_data(json_data)
         except websockets.ConnectionClosed:
             print("Connection closed")
         except Exception as e:
@@ -71,8 +74,18 @@ class Client:
         asyncio.create_task(self.receive_messages())
 
         # Start handling user input in the background
-        asyncio.create_task(self.handle_input())
+        # asyncio.create_task(self.handle_input())
 
         # Keep the program running
         while True:
             await asyncio.sleep(1)  # Prevent the main loop from exiting
+
+    # Process received data
+    async def process_data(self, data):
+        match data["type"]:
+            case "status":
+                self.repository.process_status_update(data)
+            case "command":
+                print(f"Received command: {data['command']}")
+            case _:
+                print(f"Received unknown data: {data}")

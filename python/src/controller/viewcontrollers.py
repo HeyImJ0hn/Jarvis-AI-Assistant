@@ -1,4 +1,4 @@
-from view.views import CommandWindow
+from view.views import CommandWindow, ConnectionsWindow
 
 class CommandWindowController:
     def __init__(self):
@@ -19,6 +19,14 @@ class CommandWindowController:
 
     def handle_return_pressed(self):
         self.handle_button_click()
+
+    def run(self):
+        self._view.run()
+
+class ConnectionsWindowController:
+    def __init__(self, repository):
+        self._view = ConnectionsWindow(repository)
+        self._model = None
 
     def run(self):
         self._view.run()

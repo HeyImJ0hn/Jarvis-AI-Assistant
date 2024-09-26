@@ -2,8 +2,6 @@ const server = require('./server');
 
 const NodeHelper = require("node_helper");
 const Log = require("logger");
-const ping = require("ping");
-let devices = {}
 
 module.exports = NodeHelper.create({
 
@@ -14,6 +12,7 @@ module.exports = NodeHelper.create({
             server.startServer();
             devices = server.devices;
             this.pingDevices();
+            this.updatePingResults();
         } else if (notification === "PRINT_MESSAGE") {
             Log.log("[JS] " + payload.message);
         }
@@ -26,33 +25,23 @@ module.exports = NodeHelper.create({
     },
 
     pingDevices: function() {
-        Log.log("[JS] Starting to ping devices...");
-    
-        let deviceAmount = Object.keys(devices).length;
-        
-        const pingAllDevices = () => {
-            let pingCount = 0;
-            let results = {};
-            for (let device in devices)
-                results[device] = false;
-
-            for (let device in devices) {
-                let ip = devices[device];
-                ping.sys.probe(ip, (isAlive) => {
-                    results[device] = server.clients[device].connected ? "connected" : isAlive ? "online" : "offline";
-                    pingCount++;
-                    
-                    if (pingCount === deviceAmount) {
-                        this.sendSocketNotification("PING_RESULTS", results);
-                    }
-                });
-            }
-            Log.log("[JS] Pinging complete. Sending results.");
+        const ping = async () => { 
+            await server.pingDevices();
+            this.sendSocketNotification("PING_RESULTS", server.pingResults);
         };
+
+        ping();
     
-        pingAllDevices();
-    
-        setInterval(pingAllDevices, 60000 * 30); // Ping every 30 minutes
+        setInterval(ping, 60000 * 30); // Ping every 30 minutes
+    },
+
+    updatePingResults: function() {
+        const getResults = () => {
+            if (server.updatedPingResults)
+                this.sendSocketNotification("PING_RESULTS", server.pingResults);
+        };
+
+        setInterval(getResults, 1000);
     }
 
 });
