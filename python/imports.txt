@@ -1,0 +1,12 @@
+openai
+python-dotenv
+PySide6
+pystray
+pillow
+speechrecognition 
+playsound 
+edge-tts
+websockets
+pyaudio
+setuptools
+pygobject

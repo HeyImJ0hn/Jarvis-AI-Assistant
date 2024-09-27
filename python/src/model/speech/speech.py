@@ -26,8 +26,8 @@ class SpeechRecog:
                 pass # TODO: Process the audio
         try:
             print("Recognizing...")
-            text = self.recognizer.recognize_google(self.audio)
-            self.speak_text(text)
+            return self.recognizer.recognize_google(self.audio)
+            #self.speak_text(text)
         except sr.UnknownValueError:
             print("Could not understand audio")
         except sr.RequestError as e:
