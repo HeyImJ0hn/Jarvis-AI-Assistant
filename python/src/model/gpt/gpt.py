@@ -73,35 +73,49 @@ class GPTProcessing:
         print("ME: ", commit_message)
         messages = [{"role": "system", "content": f"Project: {project_name}. User provided the following commit message: '{commit_message}'. Read the message back and request confirmation. Return the commit message with punctuation."}]
         response = self.send_messages(messages)
-        action, params, reply = self.process_response(response)
-        print("ACTION: ", action)
-        print("PARAMS: ", params)
-        print("REPLY: ", reply)
+        _, params, _ = self.process_response(response)
         self.say_reply(response)
+        
+        commit_message = params.get("commit_message")
 
         confirmation = self.speech.run()
         print("ME: ", confirmation)
         messages = [
-            {"role": "system", "content": f"Project: {project}. User replied to a confirmation request. If the reply is positive the action should be 'yes', if negative the action should be 'no'."},
+            {"role": "system", "content": f"Project: {project_name}. User replied to a confirmation request. If the reply is positive the action should be 'yes', if negative the action should be 'no'."},
             {"role": "user", "content": confirmation}
         ]
         response = self.send_messages(messages)
         action, _, _ = self.process_response(response)
-        
+
         if action.lower() == "yes":
-            messages = [{"role": "system", "content": f"Project: {project}. User confirmed the commit message. Proceeding with the commit. Assume the commit was successful and reply accordingly."}]
+            messages = [{"role": "system", "content": f"Project: {project_name}. User confirmed the commit message. Proceeding with the commit. Assume the commit was successful and reply accordingly."}]
             response = self.send_messages(messages)
             self.say_reply(response)
         else:
-            messages = [{"role": "system", "content": "User did not confirm the commit message. Request the message again and proceed accordingly."}]
-            response = self.send_messages(messages)
-            self.say_reply(response)
-            
-        try:
+            while action.lower() != "yes":
+                messages = [{"role": "system", "content": f"Project: {project_name}. User did not agree with the commit message. Request the message again and proceed accordingly."}]
+                response = self.send_messages(messages)
+                self.say_reply(response)
 
+                commit_message = self.speech.run()
+                print("ME: ", commit_message)
+                messages = [{"role": "system", "content": f"Project: {project_name}. User provided the following commit message: '{commit_message}'. Read the message back and request confirmation. Return the commit message with punctuation."}]
+                response = self.send_messages(messages)
+                _, params, _ = self.process_response(response)
+                self.say_reply(response)
+
+                confirmation = self.speech.run()
+                print("ME: ", confirmation)
+                messages = [
+                    {"role": "system", "content": f"Project: {project_name}. User replied to a confirmation request. If the reply is positive the action should be 'yes', if negative the action should be 'no'."},
+                    {"role": "user", "content": confirmation}
+                ]
+                response = self.send_messages(messages)
+                action, _, _ = self.process_response(response)
+
+        try:
             os.chdir(self.file_dao.find_project(project_name))
             subprocess.run(f"git add . && git commit -m \"{commit_message}\" && git push", shell=True, check=True)
-            #subprocess.run(['git', 'add', '.' , '&&', 'git', 'commit', '-m', commit_message, '&&', 'git','push'], check=True)  
             return f"Changes committed with message: '{commit_message}'"
         except subprocess.CalledProcessError as e:
             return f"Error committing changes: {str(e)}"
