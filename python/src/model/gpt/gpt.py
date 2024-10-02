@@ -104,6 +104,8 @@ class GPTProcessing:
                 _, params, _ = self.process_response(response)
                 self.say_reply(response)
 
+                commit_message = params.get("commit_message")
+
                 confirmation = self.speech.run()
                 print("ME: ", confirmation)
                 messages = [
