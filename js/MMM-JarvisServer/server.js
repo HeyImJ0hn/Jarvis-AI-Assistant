@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const ping = require("ping");
 
+const client = require('./discordBot');
+
 const PORT = 8082;
 const IP = '192.168.1.88';
 let readFile = false;

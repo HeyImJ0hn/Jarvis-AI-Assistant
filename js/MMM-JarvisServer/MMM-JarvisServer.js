@@ -56,6 +56,7 @@ Module.register("MMM-JarvisServer", {
 		};
 	
 		createStatusRow("Server", this.config.serverStatus ? "connected" : "offline");
+		createStatusRow("DiscordBot", "connected")
 	
 		for (let device in results) {
 			createStatusRow(device, results[device]);
